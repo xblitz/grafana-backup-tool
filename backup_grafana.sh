@@ -1,25 +1,14 @@
 #!/bin/bash
 
-current_path=`pwd`
-current_time=`date +"%Y-%m-%d_%T"`
-compressed_dashboards_name="dashboards.tar.gz"
-compressed_datasources_name="datasources.tar.gz"
+DATE=`date +%Y_%m_%d_%H%M`
+BACKUP_FOLDER=/tmp/grafana
 
-echo $current_time
+mkdir -p $BACKUP_FOLDER/tmp/dashboards
+mkdir -p $BACKUP_FOLDER/tmp/datasouces
 
-dashboard_backup_folder="/tmp/dashboards/$current_time"
-datasource_backup_folder="/tmp/datasources/$current_time"
+python saveDashboards.py $BACKUP_FOLDER/tmp/dashboards
+python saveDatasources.py $BACKUP_FOLDER/tmp/datasouces
 
-if [ ! -d "$dashboard_backup_folder" ]; then 
-  mkdir -p "$dashboard_backup_folder" 
-fi
+tar -zcvf $BACKUP_FOLDER/grafana_$DATE.tar.gz $BACKUP_FOLDER/tmp
 
-if [ ! -d "$datasource_backup_folder" ]; then 
-  mkdir -p "$datasource_backup_folder" 
-fi
-
-python "${current_path}/saveDashboards.py" $dashboard_backup_folder
-python "${current_path}/saveDatasources.py" $datasource_backup_folder
-
-tar -zcvf "/tmp/$compressed_dashboards_name" $dashboard_backup_folder
-tar -zcvf "/tmp/$compressed_datasources_name" $datasource_backup_folder
+rm -r $BACKUP_FOLDER/tmp

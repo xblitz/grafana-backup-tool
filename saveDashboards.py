@@ -1,4 +1,5 @@
 import argparse
+import json
 from dashboardApi import *
 from commons import *
 
@@ -9,32 +10,26 @@ args = parser.parse_args()
 folder_path = args.path
 
 def get_all_dashboards_in_grafana():
-    content_of_all_dashboards = search_dashboard()
-    dashboards = json.loads(content_of_all_dashboards)
+    dashboards = search_dashboard()
     print "There are {0} dashboards:".format(len(dashboards))
     for board in dashboards:
         print board['title']
     return dashboards
 
-def save_dashboard_setting(file_name, dashboard_settings):
+def save_dashboard_setting(file_name, board_data):
     file_path = folder_path + '/' + file_name + '.dashboard'
     with open(file_path , 'w') as f:
-        f.write(dashboard_settings)
+        json.dump(board_data, f)
     print "dashboard:{0} are saved to {1}".format(file_name, file_path)
 
 def get_indivisual_dashboard_setting_and_save(dashboards):
     for board in dashboards:
-        status_code_and_content = get_dashboard(board['uri'])
-        if status_code_and_content[0] == 200:
-            #print(status_code_and_content[1])
-            save_dashboard_setting(board['title'], status_code_and_content[1])
-            #save_dashboard_setting(board['title'], json.dumps(status_code_and_content[1]))
+        status_code, board_data = get_dashboard(board['uri'])
+        if status_code == 200:
+            #print(board_data)
+            save_dashboard_setting(board_data['meta']['slug'], board_data)
 
-    
 dashboards = get_all_dashboards_in_grafana()
 print_horizontal_line()
-dashboard_settings = get_indivisual_dashboard_setting_and_save(dashboards)
+get_indivisual_dashboard_setting_and_save(dashboards)
 print_horizontal_line()
-
-
-
